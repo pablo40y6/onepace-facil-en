@@ -59,6 +59,7 @@ const jumpBtn = document.getElementById('jumpBtn');
 const unavailableBox = document.getElementById('unavailableBox');
 const listContainer = document.getElementById('listContainer');
 const installBtn = document.getElementById('installBtn');
+const currentCard = document.querySelector('.current-card');
 
 function loadIndex() {
   const saved = Number(localStorage.getItem(STORAGE_KEY));
@@ -75,7 +76,7 @@ function currentEpisode() {
 }
 
 function moveTo(index) {
-  currentIndex = Math.max(0, Math.min(index, items.length - 1));
+  currentIndex = Math.max(0, Math.min(index, episodes.length - 1));
   saveIndex();
   render();
 
