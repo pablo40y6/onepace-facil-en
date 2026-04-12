@@ -75,9 +75,16 @@ function currentEpisode() {
 }
 
 function moveTo(index) {
-  currentIndex = Math.max(0, Math.min(index, episodes.length - 1));
+  currentIndex = Math.max(0, Math.min(index, items.length - 1));
   saveIndex();
   render();
+
+  requestAnimationFrame(() => {
+    currentCard?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  });
 }
 
 function render() {
