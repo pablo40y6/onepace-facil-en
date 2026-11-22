@@ -3,72 +3,77 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#111111">
-  <title>One Pace Facil EN</title>
+  <meta name="theme-color" content="#101012">
+  <title>One Pace Fácil EN</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
 </head>
 <body>
-  <main class="app">
-    <header class="hero">
-      <p class="eyebrow">Acceso rapido para movil</p>
-      <h1>One Pace Facil EN</h1>
-      <p class="subtitle">Version con subtitulos en ingles y la maxima cantidad de arcos disponibles.</p>
+  <div class="app">
+    <header class="top">
+      <a class="brand" href="#" aria-label="One Pace, inicio">One Pace<span>Fácil EN</span></a>
+      <div class="top-tools">
+        <button id="install" class="button quiet" hidden type="button">Instalar</button>
+        <button id="tv-mode" class="button quiet toggle" type="button" aria-pressed="false">Modo TV</button>
+      </div>
     </header>
 
-    <section class="card current-card">
-      <div class="progress-row">
-        <span id="progressText">Cargando...</span>
-        <button id="installBtn" class="ghost small hidden" type="button">Instalar</button>
-      </div>
-      <h2 id="episodeTitle">Preparando lista...</h2>
-      <p id="episodeMeta" class="meta"></p>
-      <p id="episodeNote" class="note"></p>
+    <main>
+      <section id="home" class="screen" aria-labelledby="arc-title">
+        <div class="hero">
+          <p id="subtitle" class="meta">Subtítulos en inglés</p>
+          <h1 id="arc-title">One Pace</h1>
+          <p id="chapter-title" class="chapter-title"></p>
+          <p id="migration" class="message" hidden>Tu progreso anterior indicaba el arco. Elige el capítulo en el que os quedasteis.</p>
 
-      <div class="actions">
-        <button id="openBtn" class="primary action-btn" type="button">Ver ahora</button>
-        <button id="doneBtn" class="secondary action-btn" type="button">Ya lo he visto</button>
-      </div>
-
-      <div id="unavailableBox" class="unavailable hidden">
-        <p>Este punto no tiene enlace disponible.</p>
-        <button id="skipBtn" class="secondary action-btn" type="button">Saltar al siguiente disponible</button>
-      </div>
-    </section>
-
-    <section class="card simple-help">
-      <h3>Uso</h3>
-      <ol>
-        <li>Toca <strong>Ver ahora</strong>.</li>
-        <li>Cuando termine, vuelve aqui.</li>
-        <li>Toca <strong>Ya lo he visto</strong>.</li>
-      </ol>
-    </section>
-
-    <details class="card admin">
-      <summary>Opciones</summary>
-      <div class="admin-grid">
-        <label>
-          Ir a un punto concreto
-          <select id="jumpSelect"></select>
-        </label>
-        <div class="inline-buttons">
-          <button id="jumpBtn" class="ghost" type="button">Ir</button>
-          <button id="prevBtn" class="ghost" type="button">Anterior</button>
-          <button id="nextBtn" class="ghost" type="button">Siguiente</button>
+          <div class="play-actions">
+            <a id="advance" class="button primary" hidden>Marcar visto y abrir siguiente</a>
+            <a id="play" class="button primary" hidden>Ver capítulo</a>
+            <a id="choose" class="button primary" hidden>Elegir capítulo</a>
+            <button id="mark" class="button secondary" hidden type="button">Marcar como visto</button>
+          </div>
+          <p id="up-next" class="message" hidden></p>
+          <div id="arc-progress" class="arc-progress" hidden>
+            <progress id="progress-bar" value="0" max="1" aria-label="Progreso del arco"></progress>
+            <p id="progress-label"></p>
+          </div>
         </div>
-        <button id="resetBtn" class="danger" type="button">Reiniciar progreso</button>
-      </div>
-    </details>
 
-    <section class="card full-list">
-      <h3>Lista completa</h3>
-      <div id="listContainer" class="list"></div>
-    </section>
-  </main>
+        <nav class="home-links" aria-label="Catálogo">
+          <a id="current-arc" class="button secondary">Capítulos del arco</a>
+          <a class="button secondary" href="#arcos">Todos los arcos</a>
+        </nav>
+      </section>
 
-  <script src="app.js"></script>
+      <section id="arcs" class="screen" hidden aria-labelledby="arcs-title">
+        <div class="screen-header">
+          <h1 id="arcs-title">Arcos</h1>
+          <a class="button quiet" href="#">Volver a inicio</a>
+        </div>
+        <ul id="arc-list" class="card-grid"></ul>
+        <footer class="catalog-footer">
+          <button id="reset" class="button quiet" type="button">Reiniciar progreso</button>
+        </footer>
+      </section>
+
+      <section id="chapters" class="screen" hidden aria-labelledby="chapters-title">
+        <div class="screen-header">
+          <div>
+            <a class="back-link" href="#arcos">Todos los arcos</a>
+            <h1 id="chapters-title"></h1>
+          </div>
+          <a id="external-list" class="button quiet">Abrir arco en Pixeldrain</a>
+        </div>
+        <ol id="chapter-list" class="card-grid chapter-grid"></ol>
+      </section>
+
+      <p id="storage-status" class="message" role="status" hidden>Este navegador ha bloqueado el guardado del progreso.</p>
+      <p id="announcement" class="visually-hidden" role="status"></p>
+    </main>
+    <noscript>Activa JavaScript para abrir el catálogo y guardar tu progreso.</noscript>
+  </div>
 </body>
 </html>

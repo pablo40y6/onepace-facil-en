@@ -1,11 +1,11 @@
 {
-  "name": "One Pace Facil EN",
+  "name": "One Pace Fácil EN",
   "short_name": "One Pace EN",
-  "description": "Acceso simple al siguiente arco de One Pace con subtitulos en ingles.",
+  "description": "Sigue One Pace con subtítulos en inglés y controles para la tele.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#111111",
+  "background_color": "#101012",
+  "theme_color": "#101012",
   "lang": "es",
   "icons": [
     {

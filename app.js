@@ -1,198 +1,275 @@
-const STORAGE_KEY = 'onepace-facil-en-current-index-v1';
+import { arcById, arcs, chapterById, nextChapter } from './catalog.js';
+import { enableRemoteNavigation, focusControl } from './remote.js';
+import {
+  finishChapter, initialProgress, openChapter, PROGRESS_KEY, readProgress,
+  selectChapter, writeProgress,
+} from './progress.js';
 
-const episodes = [
-  { title: 'Romance Dawn', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/LC22RWvq' },
-  { title: 'Orange Town', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/DB6yzXoa' },
-  { title: 'Syrup Village', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/WN5T2jSr' },
-  { title: 'Gaimon', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/phZ3h3bW' },
-  { title: 'Baratie', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/hPQyyjTf' },
-  { title: 'Arlong Park', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/gXjJTaYK' },
-  { title: 'The Adventures of Buggy\'s Crew', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/FqWWwsFD' },
-  { title: 'Loguetown', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/sng6aHYQ' },
-  { title: 'Reverse Mountain', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/Gxeezgxo' },
-  { title: 'Whisky Peak', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/5d4WRz1y' },
-  { title: 'The Trials of Koby-Meppo', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/81KWfWcq' },
-  { title: 'Little Garden', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/uGAb7TWj' },
-  { title: 'Drum Island', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/4juJksu7' },
-  { title: 'Alabasta', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/t8zvG6gH' },
-  { title: 'Jaya', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/P6mnmZpN' },
-  { title: 'Skypiea', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/1bDwFCf9' },
-  { title: 'Long Ring Long Land', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/7ky9W8GE' },
-  { title: 'Water Seven', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/o8YkGt9i' },
-  { title: 'Enies Lobby', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/PxxTYRGz' },
-  { title: 'Post-Enies Lobby', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/upyN5vVk' },
-  { title: 'Thriller Bark', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/Cq9faLGv' },
-  { title: 'Sabaody Archipelago', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/jhpKUqF8' },
-  { title: 'Amazon Lily', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/Bsr9gKsn' },
-  { title: 'Impel Down', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/y5ywnHdF' },
-  { title: 'If You Could Go Anywhere... The Adventures of the Straw Hats', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/QWXq5X3x' },
-  { title: 'Marineford', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/uFuFpnpi' },
-  { title: 'Post-War', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/7EANMSA7' },
-  { title: 'Return to Sabaody', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/igysH62b' },
-  { title: 'Fishman Island', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/o6ZzNwzp' },
-  { title: 'Punk Hazard', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/wJoipMZu' },
-  { title: 'Dressrosa', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/DMuj2Pqe' },
-  { title: 'Zou', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/nSkEY2Cq' },
-  { title: 'Whole Cake Island', meta: 'Sub EN · 720p', url: 'https://pixeldrain.net/l/phsTwRmF' },
-  { title: 'Reverie', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/Md2atmnr' },
-  { title: 'Wano', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/6rSQPvNJ' },
-  { title: 'Egghead', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/PRTmztoz' },
-  { title: 'Special: One Piece Fan Letter', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/JGkNAa1V' },
-  { title: 'Special: Warship Island 01 (April Fools 2025)', meta: 'Sub EN · 480p', url: 'https://pixeldrain.net/l/YTERtTLz' }
-];
+const TV_KEY = 'onepace-facil-en-tv-mode';
+const $ = id => document.getElementById(id);
+const home = $('home');
+const arcsScreen = $('arcs');
+const chaptersScreen = $('chapters');
+const arcList = $('arc-list');
+const chapterList = $('chapter-list');
+const play = $('play');
+const advance = $('advance');
+const choose = $('choose');
+const mark = $('mark');
+const tvButton = $('tv-mode');
+const installButton = $('install');
+let progress = readProgress();
+let canPersist = true;
+let tvMode = readTVMode();
+let returningFromPlayer = false;
+let installPrompt;
+let lastBrowsedArc;
 
-let currentIndex = loadIndex();
-let deferredPrompt = null;
-
-const progressText = document.getElementById('progressText');
-const episodeTitle = document.getElementById('episodeTitle');
-const episodeMeta = document.getElementById('episodeMeta');
-const episodeNote = document.getElementById('episodeNote');
-const openBtn = document.getElementById('openBtn');
-const doneBtn = document.getElementById('doneBtn');
-const skipBtn = document.getElementById('skipBtn');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const resetBtn = document.getElementById('resetBtn');
-const jumpSelect = document.getElementById('jumpSelect');
-const jumpBtn = document.getElementById('jumpBtn');
-const unavailableBox = document.getElementById('unavailableBox');
-const listContainer = document.getElementById('listContainer');
-const installBtn = document.getElementById('installBtn');
-const currentCard = document.querySelector('.current-card');
-
-function loadIndex() {
-  const saved = Number(localStorage.getItem(STORAGE_KEY));
-  if (Number.isInteger(saved) && saved >= 0 && saved < episodes.length) return saved;
-  return 0;
-}
-
-function saveIndex() {
-  localStorage.setItem(STORAGE_KEY, String(currentIndex));
-}
-
-function currentEpisode() {
-  return episodes[currentIndex] || episodes[0];
-}
-
-function moveTo(index) {
-  currentIndex = Math.max(0, Math.min(index, episodes.length - 1));
-  saveIndex();
-  render();
-
-  requestAnimationFrame(() => {
-    currentCard?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-  });
-}
-
-function render() {
-  const item = currentEpisode();
-  const isAvailable = item.available !== false && !!item.url;
-
-  progressText.textContent = `Punto ${currentIndex + 1} de ${episodes.length}`;
-  episodeTitle.textContent = item.title;
-  episodeMeta.textContent = item.meta || '';
-  episodeNote.textContent = item.note || 'Se ha elegido la menor calidad disponible para maximizar compatibilidad y cantidad de enlaces.';
-
-  openBtn.classList.toggle('hidden', !isAvailable);
-  doneBtn.classList.toggle('hidden', false);
-  unavailableBox.classList.toggle('hidden', isAvailable);
-  doneBtn.textContent = currentIndex >= episodes.length - 1 ? 'Terminado' : 'Ya lo he visto';
-
-  jumpSelect.value = String(currentIndex);
-  renderList();
-}
-
-function renderList() {
-  listContainer.innerHTML = '';
-  episodes.forEach((item, index) => {
-    const card = document.createElement('button');
-    card.type = 'button';
-    card.className = 'list-item';
-    if (index === currentIndex) card.classList.add('current');
-    if (index < currentIndex) card.classList.add('done');
-
-    let badge = '';
-    if (index === currentIndex) badge = '<span class="badge current">Actual</span>';
-    else if (index < currentIndex) badge = '<span class="badge done">Visto</span>';
-
-    card.innerHTML = `
-      <div class="list-top">
-        <strong>${index + 1}. ${escapeHtml(item.title)}</strong>
-        ${badge}
-      </div>
-      <div class="list-meta">${escapeHtml(item.meta || '')}</div>
-    `;
-    card.addEventListener('click', () => moveTo(index));
-    listContainer.appendChild(card);
-  });
-}
-
-function fillJumpSelect() {
-  jumpSelect.innerHTML = '';
-  episodes.forEach((item, index) => {
-    const option = document.createElement('option');
-    option.value = String(index);
-    option.textContent = `${index + 1}. ${item.title}`;
-    jumpSelect.appendChild(option);
-  });
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
-openBtn.addEventListener('click', () => {
-  const item = currentEpisode();
-  if (item.url) window.location.href = item.url;
-});
-
-doneBtn.addEventListener('click', () => {
-  if (currentIndex < episodes.length - 1) moveTo(currentIndex + 1);
-});
-
-skipBtn.addEventListener('click', () => {
-  if (currentIndex < episodes.length - 1) moveTo(currentIndex + 1);
-});
-
-prevBtn.addEventListener('click', () => moveTo(currentIndex - 1));
-nextBtn.addEventListener('click', () => moveTo(currentIndex + 1));
-
-jumpBtn.addEventListener('click', () => moveTo(Number(jumpSelect.value)));
-
-resetBtn.addEventListener('click', () => {
-  if (window.confirm('Se reiniciara el progreso.')) {
-    moveTo(0);
+function readTVMode() {
+  try {
+    const preference = localStorage.getItem(TV_KEY);
+    if (preference !== null) return preference === 'on';
+  } catch {
+    // The toggle still works for this visit.
   }
+  return /Android TV|Google TV|Smart-TV|HbbTV/i.test(navigator.userAgent);
+}
+
+function applyTVMode() {
+  document.body.classList.toggle('tv-mode', tvMode);
+  tvButton.setAttribute('aria-pressed', String(tvMode));
+}
+
+function updateProgress(change) {
+  progress = change(canPersist ? readProgress() : progress);
+  canPersist = writeProgress(progress);
+  $('storage-status').hidden = canPersist;
+}
+
+function currentChapter() {
+  return chapterById.get(progress.currentId);
+}
+
+function currentArc() {
+  return arcById.get(progress.pendingArcId ?? currentChapter()?.arcId) ?? arcs[0];
+}
+
+function arcHash(arc) {
+  return '#arco/' + arc.id;
+}
+
+function chapterLabel(chapter) {
+  return 'Capítulo ' + String(chapter.number).padStart(2, '0');
+}
+
+function watchedLabel(count, total) {
+  return count + ' de ' + total + ' vistos';
+}
+
+function renderHome(watched) {
+  const arc = currentArc();
+  const chapter = currentChapter();
+  const opened = chapter && progress.openedId === chapter.id;
+  const next = chapter && nextChapter(chapter);
+  const completed = chapter && watched.has(chapter.id);
+
+  $('arc-title').textContent = arc.title;
+  $('subtitle').textContent = chapter ? 'Subtítulos en inglés · ' + chapter.quality : 'Subtítulos en inglés';
+  $('chapter-title').textContent = chapter ? chapterLabel(chapter) : '';
+  $('migration').hidden = Boolean(chapter);
+  $('current-arc').href = arcHash(arc);
+  $('current-arc').hidden = !chapter;
+
+  choose.hidden = Boolean(chapter);
+  choose.href = arcHash(arc);
+  play.hidden = !chapter;
+  if (chapter) play.href = chapter.url;
+  play.textContent = completed ? 'Volver a ver' : opened || watched.size ? 'Continuar' : 'Ver capítulo';
+  play.classList.toggle('secondary', Boolean(opened && next));
+  play.classList.toggle('primary', !opened || !next);
+  advance.hidden = !opened || !next;
+  if (next) advance.href = next.url;
+  mark.hidden = !opened;
+  mark.textContent = completed ? 'Terminar' : 'Marcar como visto';
+
+  const upNext = $('up-next');
+  upNext.hidden = !(opened && next) && !(completed && !next && !opened);
+  if (opened && next) {
+    const nextArc = arcById.get(next.arcId);
+    upNext.textContent = nextArc === arc
+      ? 'Siguiente · ' + chapterLabel(next)
+      : 'Siguiente · ' + nextArc.title + ' · ' + chapterLabel(next);
+  } else if (completed && !next && !opened) {
+    upNext.textContent = 'Último capítulo marcado como visto.';
+  }
+
+  const count = arc.chapters.filter(item => watched.has(item.id)).length;
+  $('arc-progress').hidden = !chapter;
+  $('progress-bar').max = arc.chapters.length;
+  $('progress-bar').value = count;
+  $('progress-label').textContent = watchedLabel(count, arc.chapters.length);
+}
+
+function card(control, title, detail) {
+  const item = document.createElement('li');
+  const label = document.createElement('strong');
+  const meta = document.createElement('span');
+  control.className = 'catalog-card';
+  label.textContent = title;
+  meta.textContent = detail;
+  control.append(label, meta);
+  item.append(control);
+  return item;
+}
+
+function renderArcs(watched) {
+  arcList.replaceChildren(...arcs.map(arc => {
+    const control = document.createElement('a');
+    control.href = arcHash(arc);
+    if (arc === currentArc()) control.setAttribute('aria-current', 'true');
+    const count = arc.chapters.filter(item => watched.has(item.id)).length;
+    const detail = count
+      ? watchedLabel(count, arc.chapters.length)
+      : arc.chapters.length + (arc.chapters.length === 1 ? ' capítulo' : ' capítulos');
+    return card(control, arc.title, detail);
+  }));
+}
+
+function renderChapters(arc, watched) {
+  $('chapters-title').textContent = arc.title;
+  $('external-list').href = arc.url;
+  chapterList.replaceChildren(...arc.chapters.map(chapter => {
+    const control = document.createElement('button');
+    control.type = 'button';
+    control.dataset.chapter = chapter.id;
+    if (chapter.id === progress.currentId) control.setAttribute('aria-current', 'true');
+    const status = watched.has(chapter.id) ? 'Visto' : chapter.id === progress.currentId ? 'Actual' : '';
+    return card(control, chapterLabel(chapter), status ? chapter.quality + ' · ' + status : chapter.quality);
+  }));
+}
+
+function defaultControl() {
+  if (!arcsScreen.hidden) {
+    return (lastBrowsedArc && arcList.querySelector('a[href="' + arcHash(lastBrowsedArc) + '"]'))
+      ?? arcList.querySelector('[aria-current]');
+  }
+  if (!chaptersScreen.hidden) return chapterList.querySelector('[aria-current]') ?? chapterList.querySelector('button');
+  return choose.hidden ? play : choose;
+}
+
+function focusAfterPlayback() {
+  const action = advance.hidden ? mark : advance;
+  focusControl(!home.hidden && !action.hidden ? action : defaultControl());
+}
+
+function render(focus = false) {
+  const hash = location.hash;
+  const selectedArc = hash.startsWith('#arco/') ? arcById.get(hash.slice(6)) : null;
+  arcsScreen.hidden = hash !== '#arcos';
+  chaptersScreen.hidden = !selectedArc;
+  home.hidden = !arcsScreen.hidden || !chaptersScreen.hidden;
+  const watched = new Set(progress.watchedIds);
+
+  if (!home.hidden) renderHome(watched);
+  if (!arcsScreen.hidden) renderArcs(watched);
+  if (selectedArc) {
+    lastBrowsedArc = selectedArc;
+    renderChapters(selectedArc, watched);
+  }
+  if (focus) focusControl(defaultControl());
+}
+
+function finishCurrent(openNext) {
+  const chapter = currentChapter();
+  if (!chapter || progress.openedId !== chapter.id) return;
+
+  updateProgress(saved => finishChapter(saved, chapter, openNext));
+  if (openNext) {
+    returningFromPlayer = true;
+  } else {
+    render(true);
+    $('announcement').textContent = chapterLabel(chapter) + ' marcado como visto.';
+  }
+}
+
+play.addEventListener('click', () => {
+  const chapter = currentChapter();
+  if (!chapter) return;
+  updateProgress(saved => openChapter(saved, chapter));
+  returningFromPlayer = true;
+});
+advance.addEventListener('click', () => finishCurrent(true));
+mark.addEventListener('click', () => finishCurrent(false));
+
+chapterList.addEventListener('click', event => {
+  const control = event.target.closest('[data-chapter]');
+  const chapter = chapterById.get(control?.dataset.chapter);
+  if (!chapter) return;
+  updateProgress(saved => selectChapter(saved, chapter));
+  location.hash = '';
 });
 
-window.addEventListener('beforeinstallprompt', (event) => {
+$('reset').addEventListener('click', () => {
+  if (!window.confirm('¿Reiniciar el progreso de One Pace en este navegador?')) return;
+  updateProgress(initialProgress);
+  location.hash = '';
+});
+
+tvButton.addEventListener('click', () => {
+  tvMode = !tvMode;
+  try {
+    localStorage.setItem(TV_KEY, tvMode ? 'on' : 'off');
+  } catch {
+    // The current page can still switch layouts.
+  }
+  applyTVMode();
+  if (tvMode) focusControl(defaultControl());
+});
+
+window.addEventListener('hashchange', () => render(true));
+window.addEventListener('storage', event => {
+  if (event.key !== PROGRESS_KEY && event.key !== null) return;
+  const active = document.activeElement;
+  const hadFocus = active?.closest('.screen');
+  progress = readProgress();
+  render();
+  if (hadFocus && !active.getClientRects().length) focusControl(defaultControl());
+});
+window.addEventListener('pageshow', event => {
+  if (!event.persisted) return;
+  if (canPersist) progress = readProgress();
+  render();
+  if (tvMode && returningFromPlayer) focusAfterPlayback();
+  returningFromPlayer = false;
+});
+
+window.addEventListener('beforeinstallprompt', event => {
   event.preventDefault();
-  deferredPrompt = event;
-  installBtn.classList.remove('hidden');
+  installPrompt = event;
+  installButton.hidden = false;
+});
+installButton.addEventListener('click', async () => {
+  if (!installPrompt) return;
+  await installPrompt.prompt();
+  installPrompt = null;
+  if (document.activeElement === installButton) focusControl(defaultControl());
+  installButton.hidden = true;
+});
+window.addEventListener('appinstalled', () => {
+  installPrompt = null;
+  installButton.hidden = true;
 });
 
-installBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  installBtn.classList.add('hidden');
-});
-
-fillJumpSelect();
+applyTVMode();
 render();
+if (tvMode) {
+  const navigation = performance.getEntriesByType('navigation')[0];
+  if (navigation?.type === 'back_forward') focusAfterPlayback();
+  else focusControl(defaultControl());
+}
+enableRemoteNavigation(defaultControl);
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  });
+  // Viewing still works on browsers without PWA support or with it disabled.
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
